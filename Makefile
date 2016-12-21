@@ -1,5 +1,6 @@
-NGRID = 200000
-PFLAG = 0
+NGRID = 128
+
+PFLAG = 2
 
 FC = gfortran
 FCFLAGS = -ggdb -c \
