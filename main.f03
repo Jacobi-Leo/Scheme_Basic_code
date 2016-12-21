@@ -4,7 +4,7 @@ program main
 
   integer :: i
   character(len=32) :: arg
-  double precision :: err
+  double precision :: err, errBase
   double precision , dimension(:), allocatable :: ue
 
   do i = 0,2 ! three command line arguments
@@ -22,11 +22,18 @@ program main
 
   do i=1,scheme_step
      call scheme_update()
-     ue = uExact(i)
-     call scheme_error_calc( scheme_u, ue, err )
-     write(*,*) i, err
      !TODO: write out data
   end do
+  ue = uExact(scheme_step)
+  call scheme_error_calc( scheme_u, ue, err )
+  ue = -0.d0 * ue
+  call scheme_error_calc( scheme_u, ue, errBase )
+  write(*,*) scheme_l / scheme_n, err/errBase
+
+  ! do i = 1,scheme_n
+  !    write(*,*) scheme_grid_node(i), scheme_u(i), ue(i)
+  ! end do
+
 
 contains
   function uExact (i)
@@ -39,10 +46,9 @@ contains
     t = scheme_dt * real( i, DBL )
     do j = 1,scheme_n
        tmp = sin( PI * scheme_grid_size(j) ) / ( PI * scheme_grid_size(j) )
-       uExact(j) = tmp * sin( 2 * PI * ( scheme_grid_node(j) - scheme_a * t ) - PI * scheme_grid_size(j) )
+       uExact(j) = tmp * sin( 2.d0 * PI * ( scheme_grid_node(j) - scheme_a * t ) - PI * scheme_grid_size(j) )
+       ! uExact(j) = 0.d0
     end do
 
   end function uExact
-
-
-end program main
+end program

@@ -3,6 +3,8 @@ module scheme
   implicit none
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !                              variable scheme_flag explanation
+  !>@scheme_flag = 0
+  !     calculate test case
   !>@scheme_flag = 1
   !>    calculate primary case
   !>@scheme_flag = 2
@@ -40,14 +42,14 @@ contains
        scheme_grid_node(i) = scheme_grid_node(i-1) + dx
     end do
 
-    if ( scheme_flag == 1 .or. scheme_flag == 3 ) then
+    if ( scheme_flag == 1 .or. scheme_flag == 3 .or.scheme_flag == 0 ) then
        do i = 1,n
-          scheme_u(i) = sin( 2 * PI * scheme_grid_node(i-1) )
+          scheme_u(i) = sin( 2.d0 * PI * scheme_grid_node(i-1) )
        end do
     else if ( scheme_flag == 2 ) then
        do i = 1,n
           tmp = sin( PI * scheme_grid_size(i) ) / ( PI * scheme_grid_size(i) )
-          scheme_u(i) = tmp * sin( 2 * PI * scheme_grid_node(i) - PI * scheme_grid_size(i) )
+          scheme_u(i) = tmp * sin( 2.d0 * PI * scheme_grid_node(i) - PI * scheme_grid_size(i) )
        end do
     end if
 
@@ -74,9 +76,9 @@ contains
           u1(i) = scheme_u(i) - scheme_cfl * ( scheme_flux(i) - scheme_flux(i-1) )
        end do
        scheme_u = u1
-    else if ( flag == 1 ) then
-    else if ( flag == 2 ) then
-    else if ( flag == 3 ) then
+    ! else if ( flag == 1 ) then
+    ! else if ( flag == 2 ) then
+    ! else if ( flag == 3 ) then
        !TODO: lots of work to do...
     end if
 
@@ -84,15 +86,17 @@ contains
   end subroutine scheme_update
 
   subroutine scheme_error_calc ( u1, u2, err )
-    double precision , intent(inout), dimension(:) ::  u1, u2
+    double precision , intent(in), dimension(scheme_n) ::  u1, u2
     double precision , intent(out) :: err
 
-    integer :: i, n
-    n = scheme_n
-    err = 0.d0
-    do i = 1,n
-       err = err + scheme_grid_size(i) * abs( u1(i) - u2(i) )
-    end do
+    ! integer :: i, n
+    ! n = scheme_n
+    ! err = 0.d0
+    ! do i = 1,n
+    !    err = err + scheme_grid_size(i) * abs( u1(i) - u2(i) )
+    ! end do
+
+    err = sum( scheme_grid_size * abs( u1 - u2 ) )
 
   end subroutine scheme_error_calc
 

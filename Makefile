@@ -1,5 +1,5 @@
-NGRID = 200
-PFLAG = 1
+NGRID = 200000
+PFLAG = 0
 
 FC = gfortran
 FCFLAGS = -ggdb -c \
@@ -29,7 +29,7 @@ const.mod: const.f03
 	$(FC) $(FCFLAGS) const.f03
 
 run: main
-	./main $(NGRID) $(PFLAG)
+	./main $(NGRID) $(PFLAG) >> data.txt
 
 clean:
 	rm *.o *.mod
