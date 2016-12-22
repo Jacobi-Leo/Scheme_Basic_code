@@ -1,11 +1,10 @@
 import os
-import numpy as np
 
-b = np.linspace(0,2,3)
+b = [0, 1, 2]
 base = 8
 level = 15
 prog = "./main "
-direct = "result2/"
+direct = "result3/"
 for item in b:
     tag = str(int(item))
     fname = " >> " + direct + "DATA" + tag + ".txt"
@@ -14,4 +13,3 @@ for item in b:
         command = prog + grid + " " + tag + fname
         print(command)
         os.system(command)
-

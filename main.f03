@@ -3,9 +3,9 @@ program main
   use const
   implicit none
 
-  integer :: i
+  integer :: i, ip1, ip2, im1
   character(len=32) :: arg
-  double precision :: err, errBase
+  double precision :: err, errBase, tmp1, tmp2, tmp3
   double precision , dimension(:), allocatable :: ue, un
 
   do i = 0,2 ! three command line arguments
@@ -26,16 +26,42 @@ program main
      !TODO: write out data
   end do
   do i = 1,scheme_n
-     un(i) = scheme_u(i)
+     if ( scheme_flag == 2 ) then
+        if ( i-1 < 1 ) then
+           im1 = i - 1 + scheme_n
+        else
+           im1 = i - 1
+        endif
+        if ( i+1 > scheme_n ) then
+           ip1 = i + 1 - scheme_n
+        else
+           ip1 = i + 1
+        end if
+        if ( i+2 > scheme_n ) then
+           ip2 = i + 2 - scheme_n
+        else
+           ip2 = i + 2
+        end if
+        tmp1 = ( scheme_u(i) + scheme_u(ip1) ) * 5.d-1
+        if ( scheme_a > 0 ) then
+           tmp2 = ( scheme_u(im1) - 2.d0 * scheme_u(i) + scheme_u(ip1) ) / 6.d0
+        else
+           tmp2 = ( scheme_u(i) - 2.d0 * scheme_u(ip2) + scheme_u(ip2) ) / 6.d0
+        end if
+        un(i) = tmp1 + tmp2
+     else
+        un(i) = scheme_u(i)
+     end if
   end do
-
   ue = uExact(scheme_step)
+
   call scheme_error_calc( un, ue, err )
   ue = -0.d0 * ue
   call scheme_error_calc( un, ue, errBase )
   write(*,*) scheme_l/scheme_n, ',', err, ',', err/errBase
+
   ! do i = 1,scheme_n
-  !    write(*,*) scheme_grid_node(i), scheme_u(i), ue(i)
+  !    write(*,*) scheme_grid_node(i), ",", scheme_u(i), ",",  ue(i)
   ! end do
 
 

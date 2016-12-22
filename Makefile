@@ -30,7 +30,7 @@ const.mod: const.f03
 	$(FC) $(FCFLAGS) const.f03
 
 run: main
-	./main $(NGRID) $(PFLAG) >> data.txt
+	./main $(NGRID) $(PFLAG) >> u.txt
 
 clean:
 	rm *.o *.mod
