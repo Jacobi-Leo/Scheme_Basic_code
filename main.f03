@@ -23,7 +23,6 @@ program main
 
   do i=1,scheme_step
      call scheme_update()
-     !TODO: write out data
   end do
   do i = 1,scheme_n
      if ( scheme_flag == 2 ) then
@@ -55,11 +54,13 @@ program main
   end do
   ue = uExact(scheme_step)
 
+  un = scheme_u
   call scheme_error_calc( un, ue, err )
   ue = -0.d0 * ue
   call scheme_error_calc( un, ue, errBase )
   write(*,*) scheme_l/scheme_n, ',', err, ',', err/errBase
 
+  ! write(*,*) scheme_step
   ! do i = 1,scheme_n
   !    write(*,*) scheme_grid_node(i), ",", scheme_u(i), ",",  ue(i)
   ! end do
@@ -67,17 +68,19 @@ program main
 
 contains
   function uExact (i)
-    double precision , dimension(scheme_n) :: uExact
+    double precision , dimension(scheme_n) :: uExact, tmp
     integer, intent(in) :: i
     integer :: j
-    double precision :: tmp, t
+    double precision :: t
 
 
     t = scheme_dt * real( i, DBL )
-    do j = 1,scheme_n
-       tmp = sin( PI * scheme_grid_size(j) ) / ( PI * scheme_grid_size(j) )
-       uExact(j) = tmp * sin( 2.d0 * PI * ( scheme_grid_node(j) - scheme_a * t ) - PI * scheme_grid_size(j) )
-    end do
+    if ( scheme_flag == 2 ) then
+       tmp = sin( PI * scheme_grid_size ) / ( PI * scheme_grid_size )
+       uExact = tmp * sin( 2.d0 * PI * ( scheme_grid_node - scheme_a * t ) )
+    else
+       uExact = sin( 2.d0 * PI * (scheme_grid_node - scheme_a * t ))
+    end if
 
   end function uExact
 end program

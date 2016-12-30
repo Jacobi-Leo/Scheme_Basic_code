@@ -3,13 +3,14 @@ NGRID = 128
 PFLAG = 2
 
 FC = gfortran
-FCFLAGS = -ggdb -c \
-	-Wall -Wsurprising -Wextra -Wunderflow -pedantic \
-	-fcheck=all \
-	-fbacktrace \
-	-std=f2003 \
+FCFLAGS = -c \
+	-std=f2003 -pedantic \
+# 	-ggdb \
+# 	-Wall -Wsurprising -Wextra -Wunderflow \
+# 	-fcheck=all \
+# 	-fbacktrace \
 
-FLFLAGS = -ggdb -fbacktrace
+# FLFLAGS = -ggdb -fbacktrace
 
 main: main.o scheme.o
 	$(FC) $(FLFLAGS) -o main *.o

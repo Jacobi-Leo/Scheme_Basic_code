@@ -14,7 +14,7 @@ module scheme
   !>    calculate nodal value case
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  double precision, public, parameter :: scheme_a = 1.d0, scheme_t = 1.d-2, scheme_l = 3.d0
+  double precision, public, parameter :: scheme_a = 1.d0, scheme_t = 5.d0, scheme_l = 3.d0
 
   integer, public :: scheme_step = 200, scheme_n = 100
   double precision, public, allocatable, dimension(:) :: scheme_u, scheme_grid_size, scheme_grid_node, scheme_flux
@@ -22,7 +22,7 @@ module scheme
 
   integer, public :: scheme_flag = 1
 
-  double precision , allocatable, dimension(:) :: u1, u2, k1, k2, k3, k4
+  double precision , allocatable, dimension(:) :: u1, u2, k1, k2, k3, k4 !! temporary variables for update routine
 
   public :: scheme_init, scheme_update, scheme_error_calc
 
@@ -37,24 +37,28 @@ contains
 
     n = scheme_n
 
-    allocate( scheme_u(n), scheme_grid_size(n), scheme_grid_node(0:n), scheme_flux(0:n) )
+    allocate( scheme_u(n), scheme_grid_size(n), scheme_grid_node(n), scheme_flux(0:n) )
     scheme_cfl = 3.d-1
     dx = l / real( n, DBL )
-    scheme_grid_node(0) = 0.d0
 
     do i = 1,n
        scheme_grid_size(i) = dx
-       scheme_grid_node(i) = scheme_grid_node(i-1) + dx
+       ! if ( i == 1 ) then
+       !    scheme_grid_node(i) = 5.d-1 * scheme_grid_size(i)
+       ! else
+       !    scheme_grid_node(i) = scheme_grid_node(i-1) + 5.d-1 * (scheme_grid_size(i-1) + scheme_grid_size(i))
+       ! end if
+       scheme_grid_node(i) = (i - 5.d-1) * dx;
     end do
 
-    if ( scheme_flag == 1 .or. scheme_flag == 3 .or.scheme_flag == 0 ) then
+    if ( scheme_flag == 1 .or. scheme_flag == 3 .or. scheme_flag == 0 ) then
        do i = 1,n
-          scheme_u(i) = sin( 2.d0 * PI * scheme_grid_node(i-1) )
+          scheme_u(i) = sin( 2.d0 * PI * scheme_grid_node(i) )
        end do
     else if ( scheme_flag == 2 ) then
        do i = 1,n
           tmp = sin( PI * scheme_grid_size(i) ) / ( PI * scheme_grid_size(i) )
-          scheme_u(i) = tmp * sin( 2.d0 * PI * scheme_grid_node(i) - PI * scheme_grid_size(i) )
+          scheme_u(i) = tmp * sin( 2.d0 * PI * scheme_grid_node(i) )
        end do
     end if
 
@@ -76,14 +80,14 @@ contains
     integer :: i, flag
     flag = scheme_flag
 
-    if ( flag == 0 ) then
+    if ( flag == 1 ) then
        do i = 1,scheme_n
           scheme_flux(i) = scheme_u(i)
        end do
        scheme_flux(0) = scheme_flux(scheme_n)
        u1 = scheme_u
        do i = 1,scheme_n
-          u1(i) = scheme_u(i) - scheme_cfl * ( scheme_flux(i) - scheme_flux(i-1) )
+          u1(i) = scheme_u(i) - scheme_dt / scheme_dx * ( scheme_flux(i) - scheme_flux(i-1) )
        end do
        scheme_u = u1
     else
@@ -93,17 +97,17 @@ contains
        forall ( i = 1:scheme_n )
           k1(i) = scheme_dt * ( scheme_flux(i-1) - scheme_flux(i) ) / scheme_dx
        end forall
-       scheme_u = scheme_u + 5.d-1 * k1
+       scheme_u = u1 + 5.d-1 * k1
        call flux_update()
        forall ( i = 1:scheme_n )
           k2(i) = scheme_dt * ( scheme_flux(i-1) - scheme_flux(i) ) / scheme_dx
        end forall
-       scheme_u = scheme_u + 5.d-1 * k2
+       scheme_u = u1 + 5.d-1 * k2
        call flux_update()
        forall ( i = 1:scheme_n )
           k3(i) = scheme_dt * ( scheme_flux(i-1) - scheme_flux(i) ) / scheme_dx
        end forall
-       scheme_u = scheme_u + k3
+       scheme_u = u1 + k3
        call flux_update()
        forall ( i = 1:scheme_n )
           k4(i) = scheme_dt * ( scheme_flux(i-1) - scheme_flux(i) ) / scheme_dx
